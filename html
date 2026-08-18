@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>十条コート予約フロー 🎾</title>
+<style>
+  :root{
+    --court-green: #1e6b3a;
+    --court-green-deep: #0e3f20;
+    --court-green-soft: #e8f3ec;
+    --ball-yellow: #d6f25a;
+    --ball-yellow-warm: #f4e85a;
+    --line-white: #f7fbf6;
+    --ink: #0d2818;
+    --ink-soft: #4a5b50;
+    --accent-coral: #ff6b4a;
+    --shadow: 0 6px 18px rgba(14,63,32,0.10);
+    --shadow-strong: 0 10px 28px rgba(14,63,32,0.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo","Noto Sans JP",sans-serif;background:var(--line-white);color:var(--ink);line-height:1.6;}
+  body{
+    background:
+      radial-gradient(circle at 10% 0%, rgba(214,242,90,0.08), transparent 50%),
+      radial-gradient(circle at 90% 100%, rgba(30,107,58,0.06), transparent 55%),
+      var(--line-white);
+    min-height:100vh;padding:32px 20px 64px;
+  }
+  .wrap{max-width:1100px;margin:0 auto;}
+
+  /* Header */
+  header.hero{
+    background:linear-gradient(135deg,var(--court-green) 0%,var(--court-green-deep) 100%);
+    color:#fff;padding:36px 40px;border-radius:20px;
+    box-shadow:var(--shadow-strong);
+    position:relative;overflow:hidden;
+    margin-bottom:28px;
+  }
+  header.hero::before,header.hero::after{
+    content:"";position:absolute;border:2px solid rgba(255,255,255,0.18);
+    border-radius:50%;
+  }
+  header.hero::before{width:180px;height:180px;right:-60px;top:-60px;}
+  header.hero::after{width:120px;height:120px;right:80px;bottom:-40px;border-color:rgba(255,255,255,0.10);}
+  .hero-tag{
+    display:inline-block;background:var(--ball-yellow);color:var(--court-green-deep);
+    font-weight:800;font-size:12px;letter-spacing:0.12em;
+    padding:6px 14px;border-radius:999px;text-transform:uppercase;margin-bottom:14px;
+  }
+  .hero-title{font-size:32px;font-weight:800;line-height:1.25;margin-bottom:8px;letter-spacing:-0.01em;}
+  .hero-sub{font-size:15px;color:rgba(255,255,255,0.85);max-width:680px;}
+  .hero-ball{
+    position:absolute;right:36px;top:50%;transform:translateY(-50%);
+    width:96px;height:96px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff 0%, var(--ball-yellow) 60%);
+    box-shadow:inset 0 -8px 18px rgba(0,0,0,0.10), 0 6px 16px rgba(0,0,0,0.20);
+  }
+  .hero-ball::before{
+    content:"";position:absolute;inset:0;border-radius:50%;
+    background:
+      linear-gradient(110deg, transparent 45%, #fff 46%, #fff 54%, transparent 55%);
+    opacity:0.7;
+  }
+
+  /* Schedule strip */
+  .schedule{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px;
+  }
+  .sched-card{
+    background:#fff;border-radius:14px;padding:18px 22px;
+    border-left:6px solid var(--ball-yellow);
+    box-shadow:var(--shadow);
+  }
+  .sched-card.alt{border-left-color:var(--court-green);}
+  .sched-label{font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;}
+  .sched-value{font-size:22px;font-weight:800;color:var(--court-green-deep);}
+  .sched-note{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+
+  /* Flow */
+  .flow{display:flex;flex-direction:column;gap:0;}
+  .step{
+    background:#fff;border-radius:18px;padding:24px 28px;
+    box-shadow:var(--shadow);position:relative;
+    border:1px solid rgba(30,107,58,0.08);
+  }
+  .step-num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:50%;
+    background:var(--court-green);color:#fff;font-weight:800;font-size:16px;
+    margin-right:14px;flex-shrink:0;
+  }
+  .step-head{display:flex;align-items:center;margin-bottom:10px;}
+  .step-title{font-size:19px;font-weight:800;color:var(--court-green-deep);}
+  .step-body{font-size:14.5px;color:var(--ink);}
+  .step-meta{
+    margin-top:10px;font-size:12.5px;color:var(--ink-soft);
+    background:var(--court-green-soft);padding:8px 12px;border-radius:8px;
+    display:inline-block;
+  }
+  .step.aside{background:linear-gradient(180deg,#fff8db 0%,#fff 100%);border-color:rgba(255,179,0,0.25);}
+
+  /* Arrow between steps */
+  .arrow{
+    height:48px;display:flex;align-items:center;justify-content:center;position:relative;
+  }
+  .arrow .stem{
+    width:3px;height:100%;background:var(--court-green);border-radius:3px;position:relative;
+  }
+  .arrow .stem::after{
+    content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+    width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;
+    border-top:11px solid var(--court-green);
+  }
+
+  /* Numbered sub-list */
+  .sublist{list-style:none;margin-top:14px;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .sublist li{
+    display:flex;gap:12px;padding:14px 16px;
+    background:var(--court-green-soft);border-radius:12px;
+    font-size:14px;align-items:flex-start;
+  }
+  .sublist .num{
+    flex-shrink:0;width:30px;height:30px;border-radius:50%;
+    background:var(--ball-yellow);color:var(--court-green-deep);
+    font-weight:800;display:inline-flex;align-items:center;justify-content:center;
+    font-size:14px;margin-top:1px;
+    box-shadow:0 2px 6px rgba(214,242,90,0.40);
+  }
+  .sublist .body-text{flex:1;}
+  .sublist .bump{margin-top:8px;padding-left:10px;border-left:3px solid var(--court-green);font-size:13px;color:var(--ink-soft);}
+
+  /* Branch: alternate path */
+  .branch{
+    margin-top:24px;background:repeating-linear-gradient(
+      135deg, rgba(255,107,74,0.04) 0 12px,rgba(255,107,74,0.10) 12px 24px
+    );
+    border:2px dashed var(--accent-coral);
+    border-radius:18px;padding:22px 26px;position:relative;
+  }
+  .branch-label{
+    position:absolute;top:-14px;left:22px;background:var(--accent-coral);color:#fff;
+    padding:5px 14px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:0.08em;
+  }
+  .branch-title{font-size:18px;font-weight:800;color:#b83624;margin-bottom:8px;}
+  .branch-body{font-size:14px;color:var(--ink);}
+  .branch-meta{
+    margin-top:12px;font-size:13px;background:#fff;padding:10px 14px;border-radius:10px;
+    border:1px solid rgba(255,107,74,0.25);
+  }
+
+  /* Footer note */
+  footer.note{
+    margin-top:36px;text-align:center;font-size:12px;color:var(--ink-soft);
+    padding-top:18px;border-top:1px solid rgba(0,0,0,0.06);
+  }
+
+  /* Tiny ball accent on steps */
+  .ball-dot{
+    position:absolute;top:20px;right:20px;width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, #fff 0%, var(--ball-yellow) 70%);
+    box-shadow:inset 0 -1px 3px rgba(0,0,0,0.15);
+  }
+
+  /* Responsive: keep arrow vertical */
+  @media (max-width:640px){
+    body{padding:20px 14px 48px;}
+    header.hero{padding:28px 22px;}
+    .hero-title{font-size:24px;}
+    .hero-sub{font-size:13.5px;}
+    .hero-ball{display:none;}
+    .schedule{grid-template-columns:1fr;}
+    .step{padding:20px 20px;}
+    .step-title{font-size:17px;}
+    .arrow{height:36px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="hero-tag">Tenjin Court Reservation Flow</span>
+    <h1 class="hero-title">🎾 十条コート予約フロー<br>（板橋区 ITA-リザーブ）</h1>
+    <p class="hero-sub">抽選申込から入金、空き照会の代替ルートまでを1枚にまとめたサークル運用図です。</p>
+    <div class="hero-ball"></div>
+  </header>
+
+  <!-- Schedule overview -->
+  <section class="schedule" aria-label="スケジュール概要">
+    <div class="sched-card">
+      <div class="sched-label">抽選期間</div>
+      <div class="sched-value">16日 – 20日</div>
+      <div class="sched-note">※3ヶ月先の日程（例：8月16-20日 → 11月分が対象）</div>
+    </div>
+    <div class="sched-card alt">
+      <div class="sched-label">確定・入金期間</div>
+      <div class="sched-value">25日 – 30日</div>
+      <div class="sched-note">当選確定後に窓口入金</div>
+    </div>
+  </section>
+
+  <!-- Main flow -->
+  <main class="flow">
+
+    <article class="step">
+      <div class="ball-dot"></div>
+      <div class="step-head">
+        <span class="step-num">1</span>
+        <span class="step-title">原里駆にコート取る日を確認</span>
+      </div>
+      <div class="step-body">最初に希望日をメンバーに確認。候補日程を確定してから抽選申込へ。</div>
+    </article>
+
+    <div class="arrow"><span class="stem"></span></div>
+
+    <article class="step">
+      <div class="ball-dot"></div>
+      <div class="step-head">
+        <span class="step-num">2</span>
+        <span class="step-title">抽選申し込み（全自動）</span>
+      </div>
+      <div class="step-body">自動システムが各アカウントから抽選申込を実行。</div>
+      <div class="step-meta">
+        ※ 1アカウントで第5希望まで申込可能。統計上当選は第1・2希望まで。<br>
+        申込数を多く見せて牽制するため、第5希望まで自動申込する仕様。<br>
+        全予約完了後、<strong>指定日と時間に齟齬がないか申込数で確認</strong>する。
+      </div>
+    </article>
+
+    <div class="arrow"><span class="stem"></span></div>
+
+    <article class="step">
+      <div class="ball-dot"></div>
+      <div class="step-head">
+        <span class="step-num">3</span>
+        <span class="step-title">当選確定（入金者へ引き継ぎ）</span>
+      </div>
+      <div class="step-body">各アカウントでログインし、以下の作業を行う。</div>
+      <ol class="sublist">
+        <li>
+          <span class="num">①</span>
+          <span class="body-text">それぞれのアカウントでログインして確定作業を行い、<strong>予約番号を控える</strong>。</span>
+        </li>
+        <li>
+          <span class="num">②</span>
+          <span class="body-text">
+            予約者・予約時間・予約番号を<strong>入金者（原里駆）へ伝達</strong>。
+            <div class="bump">窓口で職員が全件の予約番号をPCに入力するため、職員に手渡しできる状態が親切。実例：3点を記載したWordリストを印刷して持参。</div>
+          </span>
+        </li>
+        <li>
+          <span class="num">③</span>
+          <span class="body-text">確定した<strong>時間と面数</strong>を自分のメモなどに控える（予定表作成時に必要）。</span>
+        </li>
+      </ol>
+    </article>
+
+    <div class="arrow"><span class="stem"></span></div>
+
+    <article class="step aside">
+      <div class="ball-dot"></div>
+      <div class="step-head">
+        <span class="step-num">4</span>
+        <span class="step-title">入金（原里駆）</span>
+      </div>
+      <div class="step-body">職員に予約番号を渡し、PC入力のもと入金処理を進める。</div>
+      <div class="step-meta">受け取る書類：<strong>「受付の紙」</strong>（原里駆が保管）</div>
+    </article>
+
+    <!-- Alternate route -->
+    <section class="branch" aria-label="抽選外の代替ルート">
+      <span class="branch-label">IF LOTTERY FAILED</span>
+      <h2 class="branch-title">📭 抽選外れ → 空き照会ルート</h2>
+      <div class="branch-body">
+        抽選で外れた枠や、そもそも申込が入らなかった枠は、<strong>空き照会から先着で再予約</strong>できる。
+      </div>
+      <div class="branch-meta">
+        <strong>空き照会のタイミング：</strong> 利用日の <strong>2か月前・5日 9:00〜</strong> 先着予約開始<br>
+        意外と枠が空いているため、望みどおりに当選しなかった場合は必ずチェック。<br>
+        ※ 先着予約後、期限内に入金しなければ <strong>自動キャンセル</strong> になるので注意。
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="note">
+    🎾 十条コート予約フロー ／ 板橋区公共施設予約システム ITA-リザーブ — サークル引継ぎ資料
+  </footer>
+
+</div>
+</body>
+</html>
